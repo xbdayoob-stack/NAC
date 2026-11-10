@@ -38,11 +38,16 @@ export interface BuildAppOptions {
 }
 
 export async function buildApp(opts: BuildAppOptions): Promise<AppContext> {
+  console.log("[nac] opening sqlite", opts.env.SQLITE_PATH);
   const { sqlite, db } = createDatabase(opts.env.SQLITE_PATH);
+  console.log("[nac] sqlite open ok");
   if (opts.migrate !== false) {
+    console.log("[nac] running migrations…");
     runMigrations(sqlite);
+    console.log("[nac] migrations ok");
   }
 
+  console.log("[nac] creating fastify…");
   const app = Fastify({
     logger: {
       level: opts.env.NODE_ENV === "test" ? "silent" : "info",
@@ -110,6 +115,7 @@ export async function buildApp(opts: BuildAppOptions): Promise<AppContext> {
   await registerStaffOrderRoutes(app, db, opts.env);
   await registerPosWebhookRoutes(app, db, opts.env);
   await registerStaffUiRoutes(app);
+  console.log("[nac] routes registered");
 
   app.addHook("onClose", async () => {
     worker?.stop();

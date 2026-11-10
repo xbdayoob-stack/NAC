@@ -20,7 +20,10 @@ export function createDatabase(sqlitePath: string): DatabaseHandle {
   }
 
   const sqlite = new Database(sqlitePath);
-  sqlite.pragma("journal_mode = WAL");
+  // WAL can hang or fail on network-backed volumes (e.g. Railway); use DELETE there.
+  const journal =
+    process.env.SQLITE_JOURNAL_MODE === "WAL" ? "WAL" : "DELETE";
+  sqlite.pragma(`journal_mode = ${journal}`);
   sqlite.pragma("busy_timeout = 5000");
   sqlite.pragma("foreign_keys = ON");
 
