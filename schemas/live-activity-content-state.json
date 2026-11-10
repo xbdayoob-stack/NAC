@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LiveActivityContentState",
+  "description": "Must match Swift ContentState Codable property names exactly.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "etaMinutes", "updatedAt"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["received", "preparing", "ready", "picked_up", "cancelled"]
+    },
+    "etaMinutes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "updatedAt": {
+      "type": "integer",
+      "description": "Unix time in seconds"
+    }
+  }
+}

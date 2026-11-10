@@ -1,0 +1,12 @@
+services:
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      SQLITE_PATH: /app/data/app.db
+      PUBLIC_BASE_URL: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-refresh-too}
+    volumes:
+      - ./data:/app/data
