@@ -10,7 +10,7 @@ RUN npm ci --include=dev
 COPY . .
 RUN npm run build \
     && rm -rf node_modules/better-sqlite3/prebuilds \
-    && npm exec --prefix node_modules/better-sqlite3 node-gyp -- rebuild --release \
+    && sh -c 'cd node_modules/better-sqlite3 && npx --yes node-gyp rebuild --release' \
     && test -f node_modules/better-sqlite3/build/Release/better_sqlite3.node \
     && node -e "require('better-sqlite3')(':memory:').close(); console.log('better-sqlite3 native ok');"
 # Skip `npm prune` — it removed better-sqlite3's compiled binding on Railway.
