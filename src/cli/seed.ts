@@ -1,3 +1,4 @@
+import "../bootstrap-crypto.js";
 import { loadEnv } from "../config/env.js";
 import { createDatabase, runMigrations } from "../db/client.js";
 import { seedDemoShop } from "../db/seed.js";

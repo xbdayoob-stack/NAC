@@ -1,3 +1,4 @@
+import "./bootstrap-crypto.js";
 import { loadEnv } from "./config/env.js";
 import { buildApp } from "./app.js";
 
