@@ -18,5 +18,5 @@ COPY --from=build /app/schemas ./schemas
 COPY --from=build /app/public ./public
 RUN mkdir -p /app/data
 ENV SQLITE_PATH=/app/data/app.db
-EXPOSE 3000
+EXPOSE 8080
 CMD ["node", "dist/index.js"]
