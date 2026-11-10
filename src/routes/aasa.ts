@@ -12,7 +12,12 @@ export async function registerAasaRoutes(
       const teamId = env.APPLE_TEAM_ID ?? "";
       const mainBundle = env.MAIN_BUNDLE_ID ?? "";
       const clipBundle = env.APP_CLIP_BUNDLE_ID ?? "";
-      const clipAppId = teamId && clipBundle ? `${teamId}.${clipBundle}.Clip` : "";
+      const clipAppId =
+        teamId && clipBundle
+          ? clipBundle.endsWith(".Clip")
+            ? `${teamId}.${clipBundle}`
+            : `${teamId}.${clipBundle}.Clip`
+          : "";
       const mainAppId = teamId && mainBundle ? `${teamId}.${mainBundle}` : "";
 
       const body = {
