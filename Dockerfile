@@ -8,11 +8,12 @@ ENV NPM_CONFIG_PRODUCTION=false
 COPY package*.json .npmrc ./
 RUN npm ci --include=dev
 COPY . .
-RUN npm run build && npm prune --omit=dev
-# Compile better-sqlite3 after prune so the .node binding is not stripped; drop broken prebuilds.
-RUN rm -rf node_modules/better-sqlite3/prebuilds \
-    && npm rebuild better-sqlite3 --foreground-scripts \
-    && node -e "const fs=require('fs');const p='node_modules/better-sqlite3/build/Release/better_sqlite3.node';if(!fs.existsSync(p)) throw new Error('missing '+p); require('better-sqlite3')(':memory:').close(); console.log('better-sqlite3 native ok');"
+RUN npm run build \
+    && rm -rf node_modules/better-sqlite3/prebuilds \
+    && npm exec --prefix node_modules/better-sqlite3 node-gyp -- rebuild --release \
+    && test -f node_modules/better-sqlite3/build/Release/better_sqlite3.node \
+    && node -e "require('better-sqlite3')(':memory:').close(); console.log('better-sqlite3 native ok');"
+# Skip `npm prune` — it removed better-sqlite3's compiled binding on Railway.
 ENV NODE_ENV=production
 ENV SQLITE_PATH=/app/data/app.db
 RUN mkdir -p /app/data
