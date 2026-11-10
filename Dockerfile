@@ -3,8 +3,10 @@ RUN apt-get update \
     && apt-get install -y python3 make g++ build-essential \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
+# Railway injects NODE_ENV=production at build time; devDeps are required for `tsc`.
+ENV NPM_CONFIG_PRODUCTION=false
 COPY package*.json .npmrc ./
-RUN npm ci \
+RUN npm ci --include=dev \
     && rm -rf node_modules/better-sqlite3/prebuilds \
     && npm rebuild better-sqlite3 --foreground-scripts
 COPY . .
