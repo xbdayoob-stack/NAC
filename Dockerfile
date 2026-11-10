@@ -11,7 +11,9 @@ RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./
-RUN npm ci --omit=dev && npm rebuild better-sqlite3
+RUN npm ci --omit=dev \
+    && npm rebuild better-sqlite3 --build-from-source \
+    && node -e "const Database=require('better-sqlite3'); const fs=require('fs'); const p='/tmp/nac-build-test.db'; try{fs.unlinkSync(p);}catch(e){} const db=new Database(p); db.pragma('journal_mode=DELETE'); db.close(); fs.unlinkSync(p); console.log('better-sqlite3 native ok');"
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/schemas ./schemas

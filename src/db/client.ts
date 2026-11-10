@@ -8,28 +8,48 @@ import * as schema from "./schema.js";
 
 export type AppDatabase = BetterSQLite3Database<typeof schema>;
 
+function bootLog(msg: string): void {
+  const line = `${msg}\n`;
+  console.log(msg);
+  try {
+    fs.writeSync(1, line);
+  } catch {
+    /* ignore */
+  }
+}
+
 export interface DatabaseHandle {
   sqlite: SqliteDatabase;
   db: AppDatabase;
 }
 
 export function createDatabase(sqlitePath: string): DatabaseHandle {
-  if (sqlitePath !== ":memory:") {
-    const dir = path.dirname(sqlitePath);
-    fs.mkdirSync(dir, { recursive: true });
+  bootLog(`[nac] createDatabase enter ${sqlitePath}`);
+  try {
+    if (sqlitePath !== ":memory:") {
+      const dir = path.dirname(sqlitePath);
+      fs.mkdirSync(dir, { recursive: true });
+      bootLog(`[nac] sqlite data dir ok ${dir}`);
+    }
+
+    bootLog("[nac] sqlite calling new Database()");
+    const sqlite = new Database(sqlitePath, { timeout: 8000 });
+    bootLog("[nac] sqlite file opened");
+    // WAL can hang or fail on network-backed volumes (e.g. Railway); use DELETE there.
+    const journal =
+      process.env.SQLITE_JOURNAL_MODE === "WAL" ? "WAL" : "DELETE";
+    sqlite.pragma(`journal_mode = ${journal}`);
+    sqlite.pragma("busy_timeout = 5000");
+    sqlite.pragma("foreign_keys = ON");
+
+    const db = drizzle(sqlite, { schema });
+
+    return { sqlite, db };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    bootLog(`[nac] sqlite open failed: ${msg} path=${sqlitePath}`);
+    throw err;
   }
-
-  const sqlite = new Database(sqlitePath);
-  // WAL can hang or fail on network-backed volumes (e.g. Railway); use DELETE there.
-  const journal =
-    process.env.SQLITE_JOURNAL_MODE === "WAL" ? "WAL" : "DELETE";
-  sqlite.pragma(`journal_mode = ${journal}`);
-  sqlite.pragma("busy_timeout = 5000");
-  sqlite.pragma("foreign_keys = ON");
-
-  const db = drizzle(sqlite, { schema });
-
-  return { sqlite, db };
 }
 
 export function runMigrations(sqlite: Database.Database): void {
