@@ -5,11 +5,14 @@ import type { FastifyInstance } from "fastify";
 let cachedHtml: string | undefined;
 
 function staffHtml(): string {
-  if (!cachedHtml) {
-    cachedHtml = readFileSync(
+  const isDev = process.env.NODE_ENV === "development";
+  if (isDev || !cachedHtml) {
+    const html = readFileSync(
       path.join(process.cwd(), "public/staff/index.html"),
       "utf8",
     );
+    if (!isDev) cachedHtml = html;
+    return html;
   }
   return cachedHtml;
 }
